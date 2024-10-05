@@ -1,0 +1,128 @@
+Coffee Shop Sales [Power BI]
+
+# CREATING NEW TABLE
+Date Table = CALENDAR(MIN(Transactions[transaction_date]), MAX(Transactions[transaction_date]))
+
+# CREATING NEW COLUMN
+Month = FORMAT('Date Table'[Date], "mmmm")
+
+# CREATING NEW COLUMN
+Month Number = MONTH('Date Table'[Date])
+
+# CREATING NEW COLUMN
+Sales = Transactions[unit_price] * Transactions[transaction_qty]
+
+# CREATING NEW MEASURES
+Total Sales = SUM(Transactions[Sales])
+
+# CREATING NEW COLUMN
+Month Year = FORMAT('Date Table'[Date], "mmmm yyyy")
+
+# CREATING NEW MEASURES
+Current Month Sales = VAR selected_month = SELECTEDVALUE('Date Table'[Month])
+            RETURN
+            TOTALMTD(CALCULATE([Total Sales], 'Date Table'[Month] = selected_month), 'Date Table'[Date])
+
+# CREATING NEW MEASURES 
+Previous Month Sales = CALCULATE([Current Month Sales], DATEADD('Date Table'[Date], -1, MONTH))
+
+# CREATING NEW MEASURES
+MoM Growth & Diff Sales = 
+
+     VAR month_diff = [Current Month Sales] - [Previous Month Sales]
+     VAR mom = ([Current Month Sales] - [Previous Month Sales]) / [Previous Month Sales]
+     VAR _sign = IF(month_diff > 0, "+", "")
+     VAR _sign_trend = IF(month_diff > 0, "🔺", "🔻")
+     RETURN
+     _sign_trend & " " & _sign & FORMAT(mom, "#0.0%" & " | " & _sign & FORMAT(month_diff / 1000, "0.0K")) & " " & "vs LM"
+
+# CREATING NEW MEASURES
+Total Orders = DISTINCTCOUNT(Transactions[transaction_id])
+
+# CREATING NEW MEASURES
+Current Month Orders = VAR selected_month = SELECTEDVALUE('Date Table'[Month])
+            RETURN
+            TOTALMTD(CALCULATE([Total Orders], 'Date Table'[Month] = selected_month), 'Date Table'[Date])
+
+# CREATING NEW MEASURES
+Previous Month Orders = CALCULATE([Current Month Orders], DATEADD('Date Table'[Date], -1, MONTH))
+
+# CREATING NEW MEASURES
+MoM Growth & Diff Orders = 
+
+    VAR month_diff = [Current Month Orders] - [Previous Month Orders]
+    VAR mom = ([Current Month Orders] - [Previous Month Orders]) / [Previous Month Orders]
+    VAR _sign = IF(month_diff > 0, "+", "")
+    VAR _sign_trend = IF(month_diff > 0, "🔺", "🔻")
+    RETURN
+    _sign_trend & " " & _sign & FORMAT(mom, "#0.0%" & " | " & _sign & FORMAT(month_diff / 1000, "0.0K")) & " " & "vs LM"
+
+# CREATING NEW MEASURES
+Total Quantity Sold = SUM(Transactions[transaction_qty])
+
+# CREATING NEW MEASURES
+Current Month Quantity = VAR selected_month = SELECTEDVALUE('Date Table'[Month])
+            RETURN
+            TOTALMTD(CALCULATE([Total Quantity Sold], 'Date Table'[Month] = selected_month), 'Date Table'[Date])
+
+# CREATING NEW MEASURES
+MoM Growth & Diff Quantity = 
+
+    VAR month_diff = [Current Month Quantity] - [Previous Month Quantity]
+    VAR mom = ([Current Month Quantity] - [Previous Month Quantity]) / [Previous Month Quantity]
+    VAR _sign = IF(month_diff > 0, "+", "")
+    VAR _sign_trend = IF(month_diff > 0, "🔺", "🔻")
+    RETURN
+    _sign_trend & " " & _sign & FORMAT(mom, "#0.0%" & " | " & _sign & FORMAT(month_diff / 1000, "0.0K")) & " " & "vs LM"
+
+# CREATING NEW COLUMN
+Day Name = FORMAT('Date Table'[Date], "DDD")	
+
+# CREATING NEW COLUMN
+Week Number = WEEKNUM('Date Table'[Date], 2)
+
+# CREATING NEW COLUMN
+Day Number = FORMAT('Date Table'[Date], "D")
+
+# CREATING NEW COLUMN
+Week Day Number = WEEKDAY('Date Table'[Date], 2)
+
+# CREATING NEW MEASURES
+Foot Note = "Click over this plot to view details."
+
+# CREATING NEW COLUMN
+Week Day / Weekend = IF('Date Table'[Day Name] = "Sat" || 'Date Table'[Day Name] = "Sun", "Weekend", "Weekday")
+
+# CREATING NEW MEASURES
+Place Holder = 0
+
+# CREATING NEW MEASURES
+Lable for Store Loaction = SELECTEDVALUE(Transactions[store_location]) & " | " & FORMAT([Total Sales] / 1000, "$0.00K")
+
+# CREATING NEW MEASURES
+Daily Avg Sales = AVERAGEX(ALLSELECTED(Transactions[transaction_date]), [Total Sales])
+
+# CREATING NEW MEASURES
+Colour For Bars = IF([Total Sales] > [Daily Avg Sales], "Above Average", "Below Average")
+
+# CREATING NEW MEASURES
+Lable for Product Category = SELECTEDVALUE(Transactions[product_category]) & " | " & FORMAT([Total Sales] / 1000, "$0.00K")
+
+# CREATING NEW MEASURES
+New MoM Label = 
+
+    VAR month_diff = [Current Month Sales] - [Previous Month Sales]
+    VAR mom = ([Current Month Sales] - [Previous Month Sales]) / [Previous Month Sales]
+    VAR _sign = IF(month_diff > 0, "+", "")
+    VAR _sign_trend = IF(month_diff > 0, "🔺", "🔻")
+    RETURN
+    _sign_trend & " " & _sign & FORMAT(mom, "#0.0%")
+
+# CREATING NEW MEASURES
+Lable for Product = SELECTEDVALUE(Transactions[product_type]) & " | " & FORMAT([Total Sales] / 1000, "$0.00K")
+
+# CREATING NEW COLUMN
+Hour = HOUR(Transactions[transaction_time])
+
+# CREATING NEW MEASURES
+TT For Hour = "Hour No:" & " " & FORMAT(AVERAGE(Transactions[Hour]), 0)
